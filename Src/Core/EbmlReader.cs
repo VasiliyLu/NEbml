@@ -40,12 +40,14 @@ namespace NEbml.Core
 		private Element _element;
 		private byte[] _sharedBuffer;
 
-		/// <summary>
-		/// Creates a new EBML reader.
-		/// </summary>
-		/// <param name="source">the source of bytes</param>
-		/// <exception cref="ArgumentNullException">if <code>source</code> is <code>null</code></exception>
-		public EbmlReader(Stream source) : this(source, long.MaxValue)
+		public bool IgnoreUnknownSize = false;
+
+        /// <summary>
+        /// Creates a new EBML reader.
+        /// </summary>
+        /// <param name="source">the source of bytes</param>
+        /// <exception cref="ArgumentNullException">if <code>source</code> is <code>null</code></exception>
+        public EbmlReader(Stream source) : this(source, long.MaxValue)
 		{
 		}
 
@@ -337,7 +339,7 @@ namespace NEbml.Core
 
 		public void Dispose()
 		{
-			_source.Dispose();
+			//_source.Dispose();
 			_containers.Clear();
 			_container = Element.Empty;
 			_element = Element.Empty;
@@ -436,7 +438,14 @@ namespace NEbml.Core
 			var size = ReadVarInt(8).Value;
 			if (size > (ulong)_container.Remaining)
 			{
-				throw new EbmlDataFormatException("invalid element size value");
+				if (IgnoreUnknownSize && (size == VInt.UnknownSize(8).Value))
+				{
+					size = (ulong)_container.Remaining;
+                }					
+				else
+				{
+                    throw new EbmlDataFormatException("invalid element size value");
+                }
 			}
 			
 			_element = new Element(identifier, (long) size, ElementType.None);
