@@ -479,7 +479,7 @@ namespace NEbml.Core
 			long result = (sbyte)buffer[0]; // with sign extension
 			for (var i = 1; i < length; i++)
 			{
-				result = result << 8 | buffer[i] & 0xff;
+				result = result << 8 | (uint)(buffer[i] & 0xff);
 			}
 			return result;
 		}
